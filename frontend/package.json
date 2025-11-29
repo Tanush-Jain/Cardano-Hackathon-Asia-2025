@@ -9,6 +9,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@emurgo/cardano-message-signing-asmjs": "^1.1.0",
+    "@emurgo/cardano-serialization-lib-browser": "^15.0.3",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",

@@ -97,7 +97,7 @@ export function LiveSystemConsole() {
   return (
     <div
       className={cn(
-        "fixed bottom-0 left-64 right-0 border-t transition-all duration-300 z-40",
+        "fixed bottom-0 left-1/2 transform -translate-x-1/2 w-[800px] border-t transition-all duration-300 z-40",
         minimized ? "h-12" : "h-48",
         theme === "dark" ? "bg-slate-950 border-slate-800" : "bg-slate-900 border-slate-800",
       )}
@@ -158,3 +158,5 @@ export function LiveSystemConsole() {
     </div>
   )
 }
+
+export default LiveSystemConsole

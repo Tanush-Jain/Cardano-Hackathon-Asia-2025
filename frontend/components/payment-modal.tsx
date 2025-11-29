@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils"
 import { Bot, CheckCircle2, Cpu, Loader2, Lock, Shield, X } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useWallet } from "@/lib/wallet-context"
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -14,19 +15,45 @@ interface PaymentModalProps {
 type PaymentStatus = "idle" | "waiting" | "confirming" | "locked"
 
 export function PaymentModal({ isOpen, onClose, onPaymentComplete, fileName }: PaymentModalProps) {
+  const { isConnected, connectWallet, signAndSubmitTx } = useWallet()
   const [status, setStatus] = useState<PaymentStatus>("idle")
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isOpen) {
       setStatus("idle")
+      setError(null)
     }
   }, [isOpen])
 
-  const handlePay = () => {
+  const handlePay = async () => {
+    if (!isConnected) {
+      try {
+        await connectWallet()
+      } catch (error) {
+        setError('Failed to connect wallet. Please install Lace wallet.')
+        return
+      }
+    }
+
     setStatus("waiting")
-    setTimeout(() => setStatus("confirming"), 2000)
-    setTimeout(() => setStatus("locked"), 4000)
-    setTimeout(() => onPaymentComplete(), 5000)
+    setError(null)
+
+    try {
+      // Create a mock transaction for demonstration
+      // In a real implementation, this would be created by the backend
+      const mockTx = "mock_transaction_data"
+
+      setStatus("confirming")
+      const txHash = await signAndSubmitTx(mockTx)
+
+      setStatus("locked")
+      setTimeout(() => onPaymentComplete(), 1000)
+    } catch (error) {
+      console.error('Payment failed:', error)
+      setError('Payment failed. Please try again.')
+      setStatus("idle")
+    }
   }
 
   if (!isOpen) return null
@@ -117,6 +144,13 @@ export function PaymentModal({ isOpen, onClose, onPaymentComplete, fileName }: P
             </div>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20">
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
+          )}
+
           {/* Action */}
           <button
             onClick={handlePay}
@@ -131,7 +165,7 @@ export function PaymentModal({ isOpen, onClose, onPaymentComplete, fileName }: P
             {status === "idle" ? (
               <>
                 <img src="/lace-wallet-logo.png" alt="Lace" className="w-5 h-5" />
-                Pay with Lace
+                {isConnected ? "Pay with Lace" : "Connect Lace Wallet"}
               </>
             ) : status === "waiting" ? (
               <>

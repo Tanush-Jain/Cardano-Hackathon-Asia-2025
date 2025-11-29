@@ -2,12 +2,12 @@
 
 import { useTheme } from "@/lib/theme-context"
 import { cn } from "@/lib/utils"
+import dynamic from "next/dynamic"
 import { useCallback, useEffect, useState } from "react"
 import { AboutTeamView } from "./about-team-view"
 import { AnalyticsView } from "./analytics-view"
 import { BentoWorkspace } from "./bento-workspace"
 import { DiagnosticDetailView } from "./diagnostic-detail-view"
-import { LiveSystemConsole } from "./live-system-console"
 import { NavSidebar } from "./nav-sidebar"
 import { PatientQueue } from "./patient-queue"
 import { PatientsView } from "./patients-view"
@@ -16,6 +16,9 @@ import { SettingsView } from "./settings-view"
 import { TopBar } from "./top-bar"
 import { WelcomeToast } from "./welcome-toast"
 
+const LiveSystemConsole = dynamic(() => import("./live-system-console").then(mod => mod.LiveSystemConsole), { ssr: false })
+
+// ...existing code...
 export function AuraDashboard() {
   const [activeTab, setActiveTab] = useState("diagnostics")
   const [queueCollapsed, setQueueCollapsed] = useState(false)
