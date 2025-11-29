@@ -1,8 +1,5 @@
-"use client"
-
-import { cn } from "@/lib/utils"
-import { Bot, CheckCircle2, Cpu, Loader2, Lock, Shield, X } from "lucide-react"
-import { useEffect, useState } from "react"
+import { AlertCircle, ChevronRight, Loader2, ShieldCheck, Wallet } from "lucide-react"
+import { useState } from "react"
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -11,167 +8,136 @@ interface PaymentModalProps {
   fileName?: string
 }
 
-type PaymentStatus = "idle" | "waiting" | "confirming" | "locked"
-
 export function PaymentModal({ isOpen, onClose, onPaymentComplete, fileName }: PaymentModalProps) {
-  const [status, setStatus] = useState<PaymentStatus>("idle")
+  // --- DEMO STATE ---
+  // We ignore the real wallet hooks and use local state to simulate the flow
+  const [demoStep, setDemoStep] = useState<'CONNECT' | 'PAY' | 'SUCCESS'>('CONNECT')
+  const [isProcessing, setIsProcessing] = useState(false)
 
-  useEffect(() => {
-    if (!isOpen) {
-      setStatus("idle")
-    }
-  }, [isOpen])
+  // 1. SIMULATE CONNECTION
+  const handleMockConnect = () => {
+    setIsProcessing(true)
+    setTimeout(() => {
+        setIsProcessing(false)
+        setDemoStep('PAY')
+    }, 800) // Small delay to feel real
+  }
 
-  const handlePay = () => {
-    setStatus("waiting")
-    setTimeout(() => setStatus("confirming"), 2000)
-    setTimeout(() => setStatus("locked"), 4000)
-    setTimeout(() => onPaymentComplete(), 5000)
+  // 2. SIMULATE PAYMENT
+  const handleMockPay = async () => {
+    setIsProcessing(true)
+    
+    // Simulate Blockchain Delays
+    console.log("💸 Building Transaction...")
+    await new Promise(r => setTimeout(r, 1000))
+    console.log("✍️ Requesting Signature...")
+    await new Promise(r => setTimeout(r, 1000))
+    
+    setDemoStep('SUCCESS')
+    console.log("✅ Transaction Confirmed")
+    
+    // Close and trigger AI
+    setTimeout(() => {
+        onPaymentComplete()
+        // Reset for next time
+        setTimeout(() => setDemoStep('CONNECT'), 500) 
+    }, 1500)
+    
+    setIsProcessing(false)
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={status === "idle" ? onClose : undefined}
-      />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
+      <div className="bg-slate-900 border border-white/10 p-8 rounded-3xl w-full max-w-lg shadow-2xl relative overflow-hidden">
+        
+        {/* Ambient Glow */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-[50px] pointer-events-none" />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-md mx-4 rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-secondary/30">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Masumi Secure Escrow</h2>
-              <p className="text-xs text-muted-foreground">Decentralized AI Payment Protocol</p>
-            </div>
+        <div className="flex justify-between items-start mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <ShieldCheck className="text-cyan-400" /> Secure Payment
+            </h2>
+            <p className="text-slate-400 text-sm mt-1">Masumi Protocol Escrow</p>
           </div>
-          {status === "idle" && (
-            <button onClick={onClose} className="p-2 rounded-lg hover:bg-secondary transition-colors">
-              <X className="w-5 h-5 text-muted-foreground" />
-            </button>
-          )}
+          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">✕</button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-5">
-          {/* Agent Details */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Agent Details</h3>
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Bot className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">Aura MedSAM v2</p>
-                <p className="text-xs text-muted-foreground">Cancer Segmentation Service</p>
-              </div>
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-success/10 border border-success/20">
-                <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                <span className="text-xs text-success font-medium">Verified</span>
-              </div>
+        {/* --- STEP 1: CONNECT WALLET (SIMULATED) --- */}
+        {demoStep === 'CONNECT' && (
+          <div className="text-center py-8 animate-in slide-in-from-right duration-300">
+            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Wallet className="w-8 h-8 text-slate-400" />
             </div>
-          </div>
-
-          {/* Cost Breakdown */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Cost Breakdown</h3>
-            <div className="rounded-lg bg-secondary/50 border border-border overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-foreground">Compute Fee</span>
-                </div>
-                <span className="text-sm font-mono font-medium text-foreground">8 ADA</span>
-              </div>
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-                <div className="flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-foreground">Privacy Fee</span>
-                </div>
-                <span className="text-sm font-mono font-medium text-foreground">2 ADA</span>
-              </div>
-              <div className="flex items-center justify-between px-4 py-3 bg-primary/5">
-                <span className="text-sm font-medium text-foreground">Total</span>
-                <span className="text-lg font-mono font-bold text-primary">10 ADA</span>
-              </div>
+            <p className="text-slate-300 mb-6">Connect your CIP-30 Wallet to proceed.</p>
+            
+            <div className="flex justify-center">
+              <button 
+                onClick={handleMockConnect}
+                disabled={isProcessing}
+                className="bg-white text-black hover:bg-gray-200 px-6 py-3 rounded-lg font-bold flex items-center gap-2 transition-all active:scale-95"
+              >
+                {isProcessing ? (
+                    <>Connecting...</>
+                ) : (
+                    <>Connect Wallet <ChevronRight size={16} /></>
+                )}
+              </button>
             </div>
+            <p className="mt-4 text-xs text-slate-500">Supports Lace, Nami, Eternl</p>
           </div>
+        )}
 
-          {/* Privacy Guarantee */}
-          <div className="p-4 rounded-lg bg-success/5 border border-success/20">
-            <div className="flex items-start gap-3">
-              <Shield className="w-5 h-5 text-success mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-success">Zero-Knowledge Proof Enabled</p>
-                <p className="text-xs text-success/80 mt-1">
-                  Patient data never leaves this enclave. Powered by Midnight Protocol.
+        {/* --- STEP 2: PAY (SIMULATED) --- */}
+        {(demoStep === 'PAY' || demoStep === 'SUCCESS') && (
+          <div className="space-y-6 animate-in slide-in-from-right duration-300">
+            <div className="bg-slate-800/50 p-4 rounded-xl border border-white/5">
+              <div className="flex justify-between mb-2">
+                <span className="text-slate-400">Connected With</span>
+                <span className="text-white font-medium flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div> Lace Wallet
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-lg">
+                <span className="text-slate-200">Service Fee</span>
+                <span className="font-bold text-cyan-400 text-xl">10.00 ₳</span>
+              </div>
+              {fileName && (
+                 <div className="mt-2 text-xs text-slate-500 text-right truncate">File: {fileName}</div>
+              )}
+            </div>
+
+            {demoStep === 'SUCCESS' ? (
+              <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-xl text-center animate-in zoom-in duration-300">
+                <p className="text-green-400 font-bold mb-1">Payment Successful!</p>
+                <p className="text-xs text-green-300/70 break-all font-mono">
+                    8a60264b21e872806c866f0c45321f3c956f1b9ec
                 </p>
               </div>
-            </div>
-          </div>
-
-          {/* Action */}
-          <button
-            onClick={handlePay}
-            disabled={status !== "idle"}
-            className={cn(
-              "w-full py-3.5 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2",
-              status === "idle"
-                ? "bg-primary text-primary-foreground hover:bg-primary/90 glow-cyan-sm"
-                : "bg-secondary text-muted-foreground cursor-not-allowed",
-            )}
-          >
-            {status === "idle" ? (
-              <>
-                <img src="/lace-wallet-logo.png" alt="Lace" className="w-5 h-5" />
-                Pay with Lace
-              </>
-            ) : status === "waiting" ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Waiting for Transaction...
-              </>
-            ) : status === "confirming" ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Confirming on Cardano...
-              </>
             ) : (
-              <>
-                <CheckCircle2 className="w-4 h-4 text-success" />
-                Payment Locked
-              </>
-            )}
-          </button>
-
-          {/* Status Indicator */}
-          {status !== "idle" && (
-            <div className="flex items-center justify-center gap-2">
-              <div
-                className={cn(
-                  "w-2 h-2 rounded-full transition-colors",
-                  status === "waiting"
-                    ? "bg-warning animate-pulse"
-                    : status === "confirming"
-                      ? "bg-primary animate-pulse"
-                      : "bg-success",
+              <button 
+                onClick={handleMockPay}
+                disabled={isProcessing}
+                className="w-full py-4 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-xl font-bold text-lg shadow-lg shadow-cyan-500/20 transition-all flex items-center justify-center gap-2"
+              >
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="animate-spin" />
+                    Verifying on Ledger...
+                  </>
+                ) : (
+                  "Confirm Payment"
                 )}
-              />
-              <span className="text-xs text-muted-foreground font-mono">
-                {status === "waiting" && "Awaiting wallet signature..."}
-                {status === "confirming" && "Block confirmation in progress..."}
-                {status === "locked" && "Escrow secured. Starting analysis..."}
-              </span>
-            </div>
-          )}
-        </div>
+              </button>
+            )}
+            
+            <p className="text-xs text-slate-500 text-center flex items-center justify-center gap-1">
+              <AlertCircle size={12} /> Powered by Cardano Mesh SDK
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )

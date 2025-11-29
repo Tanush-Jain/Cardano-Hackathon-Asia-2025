@@ -222,9 +222,13 @@ class MedSAMExplainer:
         **not** perform true TNM staging, but derives summary metrics from the
         MedSAM segmentation mask and packages them into a structured report.
 
-        Returns keys:
+        Returns keys (subset):
+            - mask: raw binary mask HxW float32 (0 or 1)
+            - prob_map: probability map HxW float32 [0, 1]
+            - gradcam_map: optional Grad-CAM style map HxW float32 [0, 1]
             - visualization: RGB overlay (H, W, 3) uint8
             - heatmap: RGB heatmap/overlay (H, W, 3) uint8
+            - mask_vis: RGB visualization of mask (H, W, 3) uint8
             - description: short natural-language explanation
             - feature_importance: {"all_scores": {region_name: score}}
             - stage, risk_level, metrics, findings, recommendations
@@ -241,6 +245,7 @@ class MedSAMExplainer:
 
         # Optional Grad-CAM style heatmap from the mitosis model (if available).
         gradcam = None
+        gradcam_map = None
         try:
             gradcam_map = self._try_compute_gradcam_map(image)
         except Exception:
@@ -377,6 +382,9 @@ class MedSAMExplainer:
         )
 
         return {
+            "mask": mask.astype(np.float32),
+            "prob_map": prob.astype(np.float32),
+            "gradcam_map": None if gradcam_map is None else gradcam_map.astype(np.float32),
             "visualization": overlay,
             "heatmap": heatmap,
             "mask_vis": mask_vis,
